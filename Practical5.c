@@ -39,44 +39,53 @@ int main(int argc, char *argv[])
 #include<mpi.h>
 #include <stdio.h>
 
-int main(int argc, char* argv[])
-{
-	int rank, size;
-    int tag, destination, count;
-    int buffer; 
+int main() {
+	
+	int first = 1,second = 2 ,third = 3,fourth = 4;
+	
+	MPI_Init(NULL,NULL);
+	
+	int rank,size;
+	MPI_Comm_size(MPI_COMM_WORLD,&size);
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	
+	if(rank == 0) 
+		MPI_Send(&first,1,MPI_INT,1,0,MPI_COMM_WORLD);
+	
+	if(rank == 1) {
 
-    tag = 1234;
-    destination = 1; 
-    count = 1; 
-    MPI_Status status;
-    MPI_Request request = MPI_REQUEST_NULL;
-
-    MPI_Init(&argc, &argv);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &size); 
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
-
-    if (rank == 0) {
-        buffer = 9999;
-        MPI_Isend(&buffer, count, MPI_INT, destination, tag, MPI_COMM_WORLD, &request); 
-    }
-
-    if (rank == destination) {
-        MPI_Irecv(&buffer, count, MPI_INT, 0, tag, MPI_COMM_WORLD, &request); 
-    }
-    MPI_Wait(&request, &status); 
-
-    if (rank == 0) {
-        printf("processor %d sent %d\n", rank, buffer);
-    }
-    if (rank == destination) {
-        printf("processor %d rcv %d\n", rank, buffer);
-    }
-
-    MPI_Finalize();
-
-	return 0;
+		MPI_Recv(&first,1,MPI_INT,0,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		
+		printf("process rank-  %d , data received %d \n",rank,first);
+		
+		MPI_Send(&second,1,MPI_INT,2,12,MPI_COMM_WORLD);
+	}
+	
+	if(rank == 2) {
+		MPI_Recv(&second,1,MPI_INT,1,12,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		
+		printf("process rank-  %d , data received %d \n",rank,second);
+		MPI_Send(&third,1,MPI_INT,3,13,MPI_COMM_WORLD);
+	}
+	
+	if(rank == 3) {
+		MPI_Recv(&third,1,MPI_INT,2,13,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		
+		printf("process rank-  %d , data received %d \n",rank,third);
+		
+		MPI_Send(&fourth,1,MPI_INT,0,14,MPI_COMM_WORLD);
+	}
+	
+	if(rank == 0) {
+		MPI_Recv(&fourth,1,MPI_INT,3,14,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		
+		printf("process rank-  %d , data received %d \n",rank,fourth);
+	}
+	
+	MPI_Finalize();
+	
 }
+
 
 
 
